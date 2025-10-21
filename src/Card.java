@@ -1,3 +1,12 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+//Going to use enums to make handling different suit/rank types easier (each has inherent value)
+enum Suit { HEARTS, DIAMONDS, CLUBS, SPADES }
+enum Rank { ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING }
+
+
 public class Card {
 
 	/*
@@ -14,31 +23,38 @@ public class Card {
 
 	*/
 
-	//ATTRIBUTES
-	public String suit;
-	public String rank; //i.e "2" "9" "king" "queen" etc
-	public int value; //actual number value of card
+	//ATTRIBUTES ("Suit" and "Rank" access the enum values)
+	private final Suit suit;
+	private final Rank rank; //i.e "2" "9" "king" "queen" etc
 
 	//CONSTRUCTOR
-	public Card(String suit, String rank, int value) {
+	public Card(Suit suit, Rank rank) {
 		this.suit = suit;
 		this.rank = rank;
-		this.value = value;
 	}
 
 	//GETTERS -----
-	public String getSuit() {
+	public Suit getSuit() {
 		return suit;
 	}
 
-	public String getRank() {
+	public Rank getRank() {
 		return rank;
 	}
 
 	public int getValue() {
-		return value;
+		//TODO: implement blackjack value (like 11 for Ace, 10 for face cards etc)
+		return 0;
+	}
+
+	public int getCardCountValue() {
+		//TODO implement card counting values for HI-LO stuff
+		return 0;
 	}
 	//---- END GETTERS
 
-
+	@Override
+	public String toString() {
+		return rank + " of " + suit;
+	}
 }

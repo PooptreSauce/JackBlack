@@ -6,3 +6,38 @@ public class Main {
         System.out.println("test2");
     }
 }
+
+/*
+-deck
+-players
+-dealer
+-counter
+-renderer
+-numDecks
+
+METHODS
+    -blackjack game
+    -addPlayer
+    -startGame
+    -playRound
+    -getDealer
+    -getPlayers
+    -resetRound
+    -main(String[])
+
+TODOS-----
+-addPlayer
+-startGame
+-playRound -->
+    -get bets from players
+    -deal initial cards (2 per player)
+    -update the card counter
+    -handle the player turns
+    -THEN execute DEALER turn
+    -determine WINNERS and distribute PAYOUTS
+    -render game state after EACH ACTION
+
+-resetRound
+-main
+
+ */
