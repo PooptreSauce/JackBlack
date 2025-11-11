@@ -19,8 +19,9 @@ public class Hand {
 	}
 
 	public void addCard(Card card) {
-		//todo: add card to hand
+
 		cards.add(card);
+
 	}
 
 	//calculate total numerical hand value (also need to handle aces)
@@ -60,7 +61,7 @@ public class Hand {
 	}
 
 	public List<Card> getCards() {
-		//todo: return COPY of cards list
+
 		return new ArrayList<>(cards);
 	}
 
@@ -78,13 +79,17 @@ public class Hand {
 	}
 
 	public boolean isBlackjack() {
-		//todo check if natural blackjack
+
+        if (getHandValue() == 21 && cards.size() == 2) {
+            return true;
+        }
 		return false;
 	}
 
 
 	public void clear() {
 		//todo clear cards and reset the bet
+
 		cards.clear();
 		bet = 0;
 	}
