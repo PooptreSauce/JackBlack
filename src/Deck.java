@@ -29,8 +29,12 @@ public class Deck {
 	}
 
 	public Card dealCard() {
-		//TODO check if deck empty?, then remove from deck
-		return null;
+		//check if deck empty?, then remove from deck
+		if (!cards.isEmpty()) {
+			return cards.removeFirst();
+		} else {
+			return null;
+		}
 	}
 
 	public boolean isEmpty() {

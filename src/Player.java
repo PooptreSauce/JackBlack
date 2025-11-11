@@ -33,4 +33,47 @@ abstract class Player {
 		this.hands.add(new Hand(0));
 		this.chips = chips;
 	}
+
+	public abstract int placeBet();
+
+	public abstract boolean decideHit(Hand hand, Card dealerUpCard);
+
+	public void hit(Hand hand, Card card) {
+		hand.addCard(card);
+	}
+
+	public List<Hand> getHands() {
+		return hands;
+	}
+
+	public Hand getCurrentHand() {
+		//todo: prototype only hands single hand for now (>1 for split feature)
+		return hands.get(0);
+	}
+
+	public int getChips() {
+		return chips;
+	}
+
+	public void addChips(int amount) {
+		this.chips += amount;
+	}
+
+	public void subtractChips(int amount) {
+		this.chips -= amount;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void clearHands() {
+		hands.clear();
+		hands.add(new Hand(0));
+	}
+
+	@Override
+	public String toString() {
+		return name + " ($" + chips + ")";
+	}
 }

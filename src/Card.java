@@ -4,7 +4,31 @@ import java.util.List;
 
 //Going to use enums to make handling different suit/rank types easier (each has inherent value)
 enum Suit { HEARTS, DIAMONDS, CLUBS, SPADES }
-enum Rank { ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING }
+enum Rank {
+	ACE(11),
+	TWO(2),
+	THREE(3),
+	FOUR(4),
+	FIVE(5),
+	SIX(6),
+	SEVEN(7),
+	EIGHT(8),
+	NINE(9),
+	TEN(10),
+	JACK(10),
+	QUEEN(10),
+	KING(10);
+
+	private int value;
+
+	Rank (int value) {
+		this.value = value;
+	}
+
+	public int getValue() {
+		return value;
+	}
+}
 
 
 public class Card {
@@ -42,9 +66,11 @@ public class Card {
 		return rank;
 	}
 
-	public int getValue() {
+	//!!An ace will count as whatever gives you the highest sum, without exceeding 21.
+	//For example, the hand (AA) is taken as 12 (11+1) if you were to stay
+	public int getBlackjackValue() {
 		//TODO: implement blackjack value (like 11 for Ace, 10 for face cards etc)
-		return 0;
+		return rank.getValue();
 	}
 
 	public int getCardCountValue() {
