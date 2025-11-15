@@ -68,7 +68,7 @@ public class Card {
 
 	//!!An ace will count as whatever gives you the highest sum, without exceeding 21.
 	//For example, the hand (AA) is taken as 12 (11+1) if you were to stay
-	public int getBlackjackValue() {
+	public int getCardValue() {
 		//TODO: implement blackjack value (like 11 for Ace, 10 for face cards etc)
 		return rank.getValue();
 	}

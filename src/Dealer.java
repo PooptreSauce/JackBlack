@@ -6,8 +6,8 @@ public class Dealer {
 	}
 
 	//Using STANDARD rules
-	// handValue <= 16 --> hit
 	// handValue >= 17 --> stand
+	// handValue <= 16 --> hit
 	public void playTurn(Deck deck) {
 		while (hand.getHandValue() < 17) {
 			Card card = deck.dealCard();
@@ -23,6 +23,7 @@ public class Dealer {
 		if (hand.getCards().isEmpty()) {
 			return null;
 		}
+		//upcard
 		return hand.getCards().get(0);
 	}
 

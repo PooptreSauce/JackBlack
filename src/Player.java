@@ -24,7 +24,7 @@ abstract class Player {
 
 	//ATTRIBUTES
 	protected String name;
-	protected List<Hand> hands = new ArrayList<>();
+	protected List<Hand> hands;
 	protected int chips;
 
 	public Player(String name, int chips) {
@@ -34,7 +34,8 @@ abstract class Player {
 		this.chips = chips;
 	}
 
-	public abstract int placeBet();
+	//definable parameters for validation (no $0 bets, bet <= chips)
+	public abstract int placeBet(int minBet, int maxBet);
 
 	public abstract boolean decideHit(Hand hand, Card dealerUpCard);
 

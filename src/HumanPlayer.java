@@ -5,10 +5,12 @@ public class HumanPlayer extends Player {
 	}
 
 	@Override
-	public int placeBet() {
-		//todo: replace with REAL input
-		//for now (prototype) always bet $10
-		return 10;
+	public int placeBet(int minBet, int maxBet) {
+		//todo: prototype bet is $10, replace with REAL input
+		int bet = 10;
+		subtractChips(bet); //deduct bet from chips
+		getCurrentHand().setBet(bet);
+		return bet;
 	}
 
 	@Override

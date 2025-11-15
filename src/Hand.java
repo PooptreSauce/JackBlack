@@ -19,9 +19,7 @@ public class Hand {
 	}
 
 	public void addCard(Card card) {
-
 		cards.add(card);
-
 	}
 
 	//calculate total numerical hand value (also need to handle aces)
@@ -30,7 +28,7 @@ public class Hand {
 		int aces = 0;
 
 		for (Card card : cards) {
-			int value = card.getBlackjackValue();
+			int value = card.getCardValue();
 			if (value == 11) {
 				aces += 1;
 			}
