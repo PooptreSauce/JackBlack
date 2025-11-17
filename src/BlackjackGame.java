@@ -32,7 +32,7 @@ public class BlackjackGame {
 
 		//1---collect bets
 		for (Player player : players) {
-			player.placeBet(1, player.getChips()); //todo make minBet configurable somewhere
+			player.placeBet(10, player.getChips()); //todo make minBet configurable somewhere
 		}
 		renderer.renderGameState(this, "Bets Have Been Placed...");
 
@@ -92,7 +92,7 @@ public class BlackjackGame {
 
 			if (playerBust == true) {
 				//isBust already deducts chips (above), so just print
-				System.out.println(player.getName() + "busts... they lose: " + bet + " - - - (T_T)");
+				System.out.println(player.getName() + " busts... they lose: " + bet + " - - - (T_T)");
 			}
 			else if (playerBlackjack && !dealerBlackjack) {//player wins (3:2 payout)
 				int payout = (int) (bet * 1.5);
@@ -138,15 +138,23 @@ public class BlackjackGame {
 		BlackjackGame game = new BlackjackGame(1); //BlackjackGame(numDecks) <----
 		game.startGame();
 
-		game.addPlayer(new HumanPlayer("PLAYER 1", 1000)); //todo: allow user to choose name
+		//prompt for user name
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Enter your name: ");
+		String playerName = scanner.nextLine().trim();
+
+		if (playerName.isEmpty()) {
+			playerName = "PLAYER 1"; //todo: (for multiplayer, add logic to handle multiple HumanPlayers
+		}
+
+		game.addPlayer(new HumanPlayer(playerName, 1000));
 		for (Player player: game.players) {
 			System.out.println(player.toString());
 		}
+
 		System.out.println(game.dealer.toString());
+
 		game.playRound();
 		game.resetRound();
 	}
-
-
-
 }
