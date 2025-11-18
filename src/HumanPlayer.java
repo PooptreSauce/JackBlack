@@ -1,32 +1,24 @@
 import java.util.Scanner;
 
 public class HumanPlayer extends Player {
+	private final UserInterface ui;
 
-	public static final Scanner scanner = new Scanner(System.in); //A shared scanner for input
-
-	public HumanPlayer(String name, int chips) {
+	public HumanPlayer(String name, int chips, UserInterface ui) {
 		super(name, chips);
+		this.ui = ui;
 	}
 
 	@Override
-	public int placeBet(int minBet, int maxBet) {
-		int bet = 0;
-
-		//get and handle BET input from user
-		while (true) {
-			System.out.print(getName() + " - enter your bet (min: " + minBet + ", max: " + maxBet + "): ");
-			try
-			{
-				bet = Integer.parseInt(scanner.nextLine().trim());
-				if (bet >= minBet && bet <= maxBet && bet <= getChips()) {
-					break;
-				} else {
-					System.out.println("Incorrect bet - must be between (" + minBet + " <--> " + maxBet + " (and <= your chips: " + getChips() + ")");
-				}
-			} catch(NumberFormatException e) {
-				System.out.println("Please enter a number");
-			}
+	public int placeBet(int minBet, int maxBet) throws InvalidBetException, InsufficientChipsException {
+		//check if player has enough chips
+		if (getChips() < minBet) {
+			throw new InsufficientChipsException(
+				"Not enough chips... you have " + getChips() + ", minimum bet is " + minBet
+			);
 		}
+
+		int actualMaxBet = Math.min(maxBet, getChips());
+		int bet = ui.getBetInput(getName(), minBet, actualMaxBet);
 
 		subtractChips(bet); //deduct bet from chips
 		getCurrentHand().setBet(bet);
@@ -35,20 +27,11 @@ public class HumanPlayer extends Player {
 
 	@Override
 	public boolean decideHit(Hand hand, Card dealerUpCard) {
-
-		//get and handle HIT/STAND input from user (y/n for now)
-		while (true) {
-			System.out.print(getName() + " - your hand: " + hand.getCards() + " (value: " + hand.getHandValue() + ") Hit? (y/n)");
-			String input = scanner.nextLine().trim().toLowerCase();
-			if (input.equals("y")) {
-				return true;
-			}
-			else if (input.equals("n")) {
-				return false;
-			}
-			else {
-				System.out.println("Please enter 'y' or 'n' ");
-			}
+		PlayerAction action = ui.getPlayerAction(getName(), hand, hand.getHandValue());
+		if (action == PlayerAction.HIT) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

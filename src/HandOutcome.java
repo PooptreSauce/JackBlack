@@ -1,0 +1,7 @@
+public enum HandOutcome {
+	PLAYER_BLACKJACK,
+	PLAYER_WIN,
+	PUSH,
+	PLAYER_LOSE,
+	PLAYER_BUST
+}

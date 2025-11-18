@@ -35,7 +35,7 @@ abstract class Player {
 	}
 
 	//definable parameters for validation (no $0 bets, bet <= chips)
-	public abstract int placeBet(int minBet, int maxBet);
+	public abstract int placeBet(int minBet, int maxBet) throws InvalidBetException, InsufficientChipsException;
 
 	public abstract boolean decideHit(Hand hand, Card dealerUpCard);
 
