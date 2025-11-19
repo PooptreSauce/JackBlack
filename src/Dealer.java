@@ -36,7 +36,6 @@ public class Dealer {
 	public void clearHand() {
 		hand.clear();
 	}
-
 	@Override
 	public String toString() {
 		return "Dealer: " + hand;

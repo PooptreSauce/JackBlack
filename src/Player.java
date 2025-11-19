@@ -37,11 +37,19 @@ abstract class Player {
 	//definable parameters for validation (no $0 bets, bet <= chips)
 	public abstract int placeBet(int minBet, int maxBet);
 
+    public abstract boolean decideDoubleDown(Hand hand, Card dealerUpCard);
+    public abstract boolean decideSplit(Hand hand, Card dealerUpCard);
 	public abstract boolean decideHit(Hand hand, Card dealerUpCard);
 
 	public void hit(Hand hand, Card card) {
 		hand.addCard(card);
 	}
+    public void doubleDown (Hand hand, Card card) {
+        subtractChips(hand.getBet());
+        hand.setBet(hand.getBet() * 2);
+        hand.addCard(card);
+    }
+
 
 	public List<Hand> getHands() {
 		return hands;
