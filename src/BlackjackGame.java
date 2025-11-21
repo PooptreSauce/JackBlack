@@ -8,7 +8,7 @@ public class BlackjackGame {
 	private final Deck deck;
 	private final List<Player> players;
 	private final Dealer dealer;
-	// todo: private CardCounter counter;
+	//todo: private CardCounter counter;
 
 	public BlackjackGame(GameConfig config, UserInterface ui) {
 		this.config = config;
@@ -27,32 +27,23 @@ public class BlackjackGame {
 		deck.shuffle();
 		roundManager = new RoundManager(deck, players, dealer, config, ui);
 		//todo: counter.reset();
+
+		//register UI to the event listeners, "if" is for safety
+		if (ui instanceof GameEventListener listener) {
+			roundManager.addListener(listener);
+		}
 	}
 
 	public void playRound() {
-
-		//1---collect bets
-		roundManager.collectBets();
-		ui.displayGameState(this, "Bets have been Placed...");
-
-		//2---Deal first 2 cards to each player (alternating -> one per round)
-		roundManager.dealInitialCards();
-		ui.displayGameState(this, "Initial Deal");
-
-		//3---Handle player turns sequentially
-		roundManager.executePlayerTurns();
-
-		//4---Do Dealers turn
-		roundManager.executeDealerTurn();
-		ui.displayGameState(this, "Dealer's Turn Finished");
-
-		//5----Find winners --> give payouts
-		roundManager.processPayout();
-		ui.displayGameState(this, "Round Complete");
+		roundManager.collectBets(); //1---collect bets
+		roundManager.dealInitialCards(); //2----Deal first 2 cards to each player (alternating -> one per round)
+		roundManager.executePlayerTurns(); //3---Handle player turns sequentially
+		roundManager.executeDealerTurn(); //4---Do Dealers turn
+		roundManager.processPayout(); //5----Find winners ---> give payouts
 	}
 
+	//clear the hands of all the players
 	public void resetRound() {
-		//clear the hands of all the players
 		for (Player player : players) {
 			player.clearHands();
 		}

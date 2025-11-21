@@ -14,13 +14,20 @@ public class Main {
 		//create UI
 		UserInterface ui = new ConsoleUI();
 
-		//create and start GAME
 		BlackjackGame game = new BlackjackGame(config, ui);
+
+		//("if" for safety)
+		if (ui instanceof ConsoleUI consoleUI) {
+			consoleUI.setGame(game); //let the consoleUI have access to game object
+		}
+
 		game.startGame();
 
 		//get player name and add player with starting chips
 		String playerName = ui.getPlayerName();
-		game.addPlayer(new HumanPlayer(playerName, config.getStartingChips(), ui));
+		game.addPlayer(new HumanPlayer(playerName, config.getStartingChips()));
+		game.addPlayer(new HumanPlayer(playerName, config.getStartingChips()));
+
 
 		//MAIN GAME LOOP-----
 		boolean playing = true;

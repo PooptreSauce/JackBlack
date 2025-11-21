@@ -3,7 +3,11 @@ import java.util.Collections;
 import java.util.List;
 
 //Going to use enums to make handling different suit/rank types easier (each has inherent value)
-enum Suit { HEARTS, DIAMONDS, CLUBS, SPADES }
+enum Suit {
+	HEARTS,
+	DIAMONDS,
+	CLUBS,
+	SPADES }
 enum Rank {
 	ACE(11),
 	TWO(2),
@@ -66,10 +70,8 @@ public class Card {
 		return rank;
 	}
 
-	//!!An ace will count as whatever gives you the highest sum, without exceeding 21.
-	//For example, the hand (AA) is taken as 12 (11+1) if you were to stay
+	//Ace count (1 OR 11) handled in HAND
 	public int getCardValue() {
-		//TODO: implement blackjack value (like 11 for Ace, 10 for face cards etc)
 		return rank.getValue();
 	}
 

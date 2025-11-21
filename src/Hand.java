@@ -29,7 +29,7 @@ public class Hand {
 
 		for (Card card : cards) {
 			int value = card.getCardValue();
-			if (value == 11) {
+			if (card.getRank() == Rank.ACE) {
 				aces += 1;
 			}
 			total += value;
@@ -59,7 +59,6 @@ public class Hand {
 	}
 
 	public List<Card> getCards() {
-
 		return new ArrayList<>(cards);
 	}
 
@@ -84,10 +83,7 @@ public class Hand {
 		return false;
 	}
 
-
 	public void clear() {
-		//todo clear cards and reset the bet
-
 		cards.clear();
 		bet = 0;
 	}

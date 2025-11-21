@@ -1,0 +1,5 @@
+public enum GameEventType {
+	STATE_CHANGED, //ie COLLECTING_BETS --> DEALING_INITIAL_CARDS
+	PLAYER_HIT,
+	ROUND_END
+}

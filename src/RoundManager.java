@@ -1,135 +1,166 @@
 import java.util.List;
+import java.util.ArrayList;
 
 public class RoundManager {
-	private GameState currentState; //ie dealing (WAITING_FOR_PLAYERS, COLLECTING BETS) etc
+	private GameState currentState;
 	private final Deck deck;
-	private List<Player> players;
+	private final List<Player> players;
 	private final Dealer dealer;
 	private final GameConfig config;
 	private final UserInterface ui;
 
+	//NOT in the constructor
+	private final List<GameEventListener> listeners = new ArrayList<>();
+
 	public RoundManager(Deck deck, List<Player> players, Dealer dealer, GameConfig config, UserInterface ui) {
 		this.deck = deck;
-		this.players = players;
 		this.dealer = dealer;
+		this.players = players;
 		this.config = config;
-		this.currentState = GameState.WAITING_FOR_PLAYERS; //<----- round's game state always starts here
 		this.ui = ui;
+		this.currentState = GameState.WAITING_FOR_PLAYERS;
 	}
 
-	//1-----COLLECTING BETS
+	public void addListener(GameEventListener listener) {
+		listeners.add(listener);
+	}
+
+	private void fireEvent(GameEventType type, Object payload) {
+		GameEvent event = new GameEvent(type, currentState, payload);
+		for (GameEventListener listener : listeners) {
+			listener.onGameEvent(event);
+		}
+	}
+
+	//-----------------GAME HANDLING METHODS
+	//------COLLECTING BETS
 	public void collectBets() {
 		currentState = GameState.COLLECTING_BETS;
+		fireEvent(GameEventType.STATE_CHANGED, null);
 
-		//get bets from each player
 		for (Player player : players) {
 			try {
-				//maxBet -> player can't bet more than their chips OR maxBet value
-				player.placeBet(config.getMinBet(), Math.min(config.getMaxBet(), player.getChips()));
+				int actualMaxBet = Math.min(config.getMaxBet(), player.getChips());
+
+				//ask via the UI
+				int bet = ui.getBetInput(player.getName(), config.getMinBet(), actualMaxBet);
+
+				//let player sit out if they want to
+				if (bet == 0) {
+					player.getCurrentHand().setBet(0);
+					continue;
+				}
+
+				//validate then apply via the player model
+				player.placeBet(bet);
 
 			} catch (InvalidBetException | InsufficientChipsException e) {
-				//todo: add some kind of balance reload feature to deal with this
-				//Log the error and skip this player for the round
-
 				System.err.println("Betting ERROR for " + player.getName() + ": " + e.getMessage());
-
-				//IMPORTANT-> their bet needs to be 0 to not be included in round
 				player.getCurrentHand().setBet(0);
-				continue;
 			}
 		}
 	}
 
-	//2---Deal first 2 cards to each player (alternating -> one per deal)
+	//-----DEAL FIRST TWO CARDS
 	public void dealInitialCards() {
 		currentState = GameState.DEALING_INITIAL_CARDS;
+		fireEvent(GameEventType.STATE_CHANGED, null);
 
 		for (int i = 0; i < 2; i++) {
 			for (Player player : players) {
 
-				//skip players who didn't place a bet
-				if (player.getCurrentHand().getBet() == 0) {
-					continue;
-				}
+				//todo: (get rid of magic number later) (player states?)
+				//sitting out
+				if (player.getCurrentHand().getBet() == 0) continue;
 
 				Card card = deck.dealCard();
-				if (card != null) {
-					player.hit(player.getCurrentHand(), card);
-				}
+				if (card != null) player.hit(player.getCurrentHand(), card);
 			}
-
 			Card dealerCard = deck.dealCard();
-			if (dealerCard != null) {
-				dealer.getHand().addCard(dealerCard);
-			}
+			if (dealerCard != null) dealer.getHand().addCard(dealerCard);
 		}
 	}
 
-	//3---Handle player turns sequentially
+	//------EXECUTE ALL PLAYER TURNS IN ORDER
 	public void executePlayerTurns() {
 		currentState = GameState.PLAYER_TURNS;
+		fireEvent(GameEventType.STATE_CHANGED, null);
+
 		for (Player player : players) {
-			//skip players who didn't place bet
-			if (player.getCurrentHand().getBet() == 0) {
-				continue;
-			}
+			if (player.getCurrentHand().getBet() == 0) continue;
 			executeSinglePlayerTurn(player);
+
 		}
 	}
 
-	public void executeSinglePlayerTurn(Player player) {
+	private void executeSinglePlayerTurn(Player player) {
 		Hand hand = player.getCurrentHand();
+		fireEvent(GameEventType.STATE_CHANGED, null);
 
-		//check for blackjack - should auto stand
-		if (hand.isBlackjack()) {
-			ui.displayMessage(player.getName() + "has BLACKJACK! Automatically stands");
-		}
-		while (!hand.isBust() && player.decideHit(hand, dealer.getUpCard())) {
-			Card card = deck.dealCard();
-			if (card != null) {
-				player.hit(hand, card);
-				ui.displayMessage(player.getName() + " hits: " + card);
+		//check for blackjack --> auto-stand
+		if (hand.isBlackjack()) return;
+
+		while (!hand.isBust()) {
+			PlayerAction action = ui.getPlayerAction(player.getName(), hand, hand.getHandValue());
+
+			if (action == PlayerAction.HIT) {
+				Card card = deck.dealCard();
+				if (card != null) {
+					player.hit(hand, card);
+					ui.displayMessage(player.getName() + " hits: " + card);
+				}
+			} else {
+				break; //STAND or other choice
 			}
 		}
 	}
 
-	//4---Do Dealers turn
+	//-----DEALER TURN
 	public void executeDealerTurn() {
 		currentState = GameState.DEALER_TURN;
+		fireEvent(GameEventType.STATE_CHANGED, null);
 		dealer.playTurn(deck);
 	}
 
-	//5----Find winners --> give payouts
+	//----PROCESSING PAYOUTS
 	public void processPayout() {
 		currentState = GameState.PAYOUT;
+		fireEvent(GameEventType.STATE_CHANGED, null);
+
 		Hand dealerHand = dealer.getHand();
 
-		//go through all players, compare their hand to dealer, payout accordingly
 		for (Player player : players) {
-			Hand playerHand = player.getCurrentHand(); //todo: deal with multiple hands for split
+			Hand playerHand = player.getCurrentHand();
 			int bet = playerHand.getBet();
 
-			//skip players who didn't place bet
-			if (bet == 0 ) {
-				continue;
-			}
+			//skip if sitting out (maybe change method so that sitting-out players are "pre-considered")
+			if (bet == 0) continue;
 
 			HandOutcome outcome = GameLogic.determineOutcome(playerHand, dealerHand);
 			int payout = GameLogic.calculatePayout(outcome, bet);
 
 			if (payout > 0) {
 				player.addChips(bet + payout);
+			} else if (payout == 0) {
+				player.addChips(bet); //return the original bet on push
 			}
-			else if (payout == 0) {
-				player.addChips(bet); //push --> returns original bet
-			}
-			//otherwise player lost bet (already deducted)
-
+			//if payout < 0 they already lost their bet
 		}
+
+		currentState = GameState.ROUND_COMPLETE;
+		fireEvent(GameEventType.STATE_CHANGED, null);
+		fireEvent(GameEventType.ROUND_END, null);
+
 	}
+	//------------------
 
 	public GameState getCurrentState() {
 		return currentState;
 	}
-
 }
+
+
+
+
+
+

@@ -20,7 +20,7 @@ public class GameLogic {
 			return HandOutcome.PLAYER_BLACKJACK;
 		}
 		else if (dealerBust || playerValue > dealerValue) {
-			return HandOutcome.PLAYER_WIN;  // === "DEALER_BUST"
+			return HandOutcome.PLAYER_WIN;  //=== "DEALER_BUST"
 		}
 		else if (playerValue == dealerValue) {
 			return HandOutcome.PUSH; //tie

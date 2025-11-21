@@ -1,42 +1,59 @@
 import java.util.Scanner;
 
-public class ConsoleUI implements UserInterface {
+public class ConsoleUI implements UserInterface, GameEventListener {
 	private final Scanner scanner = new Scanner(System.in);
 
+	//todo: remove and switch to using DTO for multiplayer
+	//ui currently holds game reference to display table
+	private BlackjackGame game;
+
+	public void setGame(BlackjackGame game) {
+		this.game = game;
+	}
+
+	//--------------EVENT HANDLING
 	@Override
-	public void displayMessage(String message) {
-		System.out.println(message);
+	public void onGameEvent(GameEvent event) {
+		GameEventType type = event.getType();
+		GameState state = event.getState();
+
+		//what type of event? (!!not state!!)
+		switch (type) {
+			case STATE_CHANGED -> {
+				displayGameState(state);
+				if (game != null) {
+					showTable(game, state); //showTable will handle display logic
+				}
+			}
+			case PLAYER_HIT -> {
+				Player player = (Player) event.getPayload();
+				displayMessage(player.getName() + "HITS!");
+			}
+			case ROUND_END -> displayMessage("== ROUND COMPLETE ==");
+		}
 	}
 
 	@Override
-	public void displayGameState(BlackjackGame game, String context) {
-		System.out.println(" = = BLACKJACK - " + context + " = =");
-		System.out.println("Dealer Upcard: " + game.getDealer().getUpCard());
+	public void displayGameState(GameState state) {
+		System.out.println("\n = = " + state + " = =");
 
-		for (Player player : game.getPlayers()) {
-			Hand hand = player.getCurrentHand();
-
-			//show if player is sitting out this round
-			if (hand.getBet() == 0) {
-				System.out.println(player.getName() + " - Sitting out this round...");
-				continue;
-			}
-
-			if (hand.getCards().isEmpty()) continue; //skips if empty
-
-			System.out.printf("%s (Chips: %d, Bet: %d)%n",
-			player.getName(), player.getChips(), hand.getBet());
-
-			System.out.printf(" Hand: %s (Value: %d)%n",
-			hand.getCards(), hand.getHandValue());
-
-			if (hand.isBust()) {
-				System.out.println(" BUST!!!");
-			} else if (hand.isBlackjack()) {
-				System.out.println(" BLACKJACK!!!");
-			}
+		switch (state) {
+			case COLLECTING_BETS -> System.out.println("Collecting Bets...");
+			case DEALING_INITIAL_CARDS -> System.out.println("Dealing initial cards...");
+			case PLAYER_TURNS -> System.out.println("Players are taking turns..."); //todo: individualize for each player
+			case DEALER_TURN -> System.out.println("Dealer revealing and drawing cards...");
+			case PAYOUT -> System.out.println("Paying out winnings!!!");
+			case ROUND_COMPLETE -> System.out.println("Round finished!!!");
+			default -> {} //not really sure how to test this
 		}
-		System.out.println("-----------------------------------");
+
+		//later we can do summary or something
+	}
+
+	//--------CORE MESSAGE + UI INPUTS
+	@Override
+	public void displayMessage(String message) {
+		System.out.println(message);
 	}
 
 	@Override
@@ -58,22 +75,17 @@ public class ConsoleUI implements UserInterface {
 
 			try {
 				int bet = Integer.parseInt(scanner.nextLine().trim());
-
-				if (bet == 0) {//allow sitting out
-					return 0;
-				}
-
-				if (bet >= minBet && bet <= maxBet) {
+				if (bet >= 0 && bet <= maxBet) {
 					return bet;
 				}
-				System.out.printf("Incorrect bet: must be between %d and %d.%n",
-				minBet, maxBet);
+
 			} catch (NumberFormatException e) {
 				System.out.println("Enter valid number");
 			}
 		}
 	}
 
+	//todo: add other actions (maybe abort y/n type deal)
 	@Override
 	public PlayerAction getPlayerAction(String playerName, Hand hand, int handValue) {
 		while (true) {
@@ -89,5 +101,45 @@ public class ConsoleUI implements UserInterface {
 			}
 			System.out.println("Yo, Enter 'y' or 'n'");
 		}
+	}
+
+	//--------SHOW TABLE
+	//we can add more helper methods to split this up a bit
+	public void showTable(BlackjackGame game, GameState state) {
+		//title
+		System.out.println("\n===== TABLE =====");
+
+		//dealer --> has hand
+		Dealer dealer = game.getDealer();
+		Hand dealerHand = dealer.getHand();
+
+		boolean dealerRevealed = (state != GameState.DEALING_INITIAL_CARDS && state != GameState.PLAYER_TURNS);
+
+		//dealer display
+		if (dealerRevealed) {
+			System.out.println("Dealer hand: " + dealerHand.getCards() + " (Value: " + dealerHand.getHandValue() + ")");
+		}
+		else {
+			Card upCard = dealer.getUpCard();
+			System.out.println("Dealer shows: " + (upCard != null ? upCard.toString() : "NULL?") + " and [hidden]");
+		}
+
+		//all players hands AND chips (or sitting out)
+		for (Player player : game.getPlayers()) {
+
+			Hand hand = player.getCurrentHand();
+			if (hand.getBet() == 0) { //todo: get rid of magic number (player states?)
+				System.out.println(player.getName() + " is sitting out this round...");
+				continue;
+			}
+
+			System.out.printf("%s (Chips: %d, Bet: %d)\n", player.getName(), player.getChips(), hand.getBet());
+			System.out.println("   Hand: " + hand.getCards() + " (Value: " + hand.getHandValue() + ")");
+			if (hand.isBust()) System.out.println("  --> BUST!!!");
+			else if (hand.isBlackjack()) System.out.println("  --> BLACKJACK!!!");
+		}
+
+		System.out.println("-----------------------------------------");
+
 	}
 }

@@ -2,27 +2,14 @@ import java.util.*;
 
 abstract class Player {
 
-	/*
-	Each "Player" has:
+    /*
+      Each "Player" has:
+      - A name
+      - One or more hands (ArrayList stack of cards)
+      - A chip balance
+      - Methods to update state (hit, place bet, add/subtract chips)
+    */
 
-	- A name
-	- A current HAND (ArrayList stack of cards)
-
-		--> SUM of CARDS in HAND will be assigned to player for their CURRENT "SCORE"
-
-	- Balance: i.e $100.00 (This is SUM of HAND balances) (for splitting)
-
-	- Current bet amount
-
-	- Actions
-		--> Hit
-			---> Hit(Double)
-		--> Stand
-		--> Split (duplicate) HANDS
-
-	*/
-
-	//ATTRIBUTES
 	protected String name;
 	protected List<Hand> hands;
 	protected int chips;
@@ -34,21 +21,23 @@ abstract class Player {
 		this.chips = chips;
 	}
 
-	//definable parameters for validation (no $0 bets, bet <= chips)
-	public abstract int placeBet(int minBet, int maxBet) throws InvalidBetException, InsufficientChipsException;
+	//-------ABSTRACT methods
+	// The controller decides the bet amount and passes it here for validation (MVC)
+	public abstract void placeBet(int bet) throws InvalidBetException, InsufficientChipsException;
 
-	public abstract boolean decideHit(Hand hand, Card dealerUpCard);
-
+	//----GAMEPLAY Actions
 	public void hit(Hand hand, Card card) {
 		hand.addCard(card);
 	}
+
+	//----Getters / Helpers
 
 	public List<Hand> getHands() {
 		return hands;
 	}
 
 	public Hand getCurrentHand() {
-		//todo: prototype only hands single hand for now (>1 for split feature)
+		//prototype -> single hand only (splitting later)
 		return hands.get(0);
 	}
 
@@ -69,8 +58,9 @@ abstract class Player {
 	}
 
 	public void clearHands() {
-		hands.clear();
-		hands.add(new Hand(0));
+		for (Hand hand : hands) {
+			hand.clear();
+		}
 	}
 
 	@Override
