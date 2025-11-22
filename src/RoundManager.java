@@ -95,7 +95,6 @@ public class RoundManager {
 
 	private void executeSinglePlayerTurn(Player player) {
 		Hand hand = player.getCurrentHand();
-		fireEvent(GameEventType.STATE_CHANGED, null);
 
 		//check for blackjack --> auto-stand
 		if (hand.isBlackjack()) return;
@@ -144,7 +143,7 @@ public class RoundManager {
 			} else if (payout == 0) {
 				player.addChips(bet); //return the original bet on push
 			}
-			//if payout < 0 they already lost their bet
+			//if payout < 0 they already lost their bet (chips deducted earlier)
 		}
 
 		currentState = GameState.ROUND_COMPLETE;

@@ -22,6 +22,7 @@ public class Deck {
 				}
 			}
 		}
+		shuffle();
 	}
 
 	public void shuffle() {
@@ -31,7 +32,7 @@ public class Deck {
 	public Card dealCard() {
 		//check if deck empty?, then remove from deck
 		if (!cards.isEmpty()) {
-			return cards.removeFirst();
+			return cards.remove(0);
 		} else {
 			return null;
 		}

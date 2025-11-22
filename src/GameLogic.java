@@ -31,7 +31,7 @@ public class GameLogic {
 	}
 
 
-	//get the correct payout using player's original bet ==> (blackjack, tie etc)
+	//returns player's NET profit (NOT including original bet amount)
 	public static int calculatePayout(HandOutcome outcome, int bet) {
 		switch(outcome) {
 			case PLAYER_BLACKJACK:

@@ -58,9 +58,8 @@ abstract class Player {
 	}
 
 	public void clearHands() {
-		for (Hand hand : hands) {
-			hand.clear();
-		}
+		hands.clear();
+		hands.add(new Hand(0));
 	}
 
 	@Override

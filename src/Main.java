@@ -21,30 +21,31 @@ public class Main {
 			consoleUI.setGame(game); //let the consoleUI have access to game object
 		}
 
-		game.startGame();
 
 		//get player name and add player with starting chips
-		String playerName = ui.getPlayerName();
-		game.addPlayer(new HumanPlayer(playerName, config.getStartingChips()));
-		game.addPlayer(new HumanPlayer(playerName, config.getStartingChips()));
+		String player1Name = ui.getPlayerName();
+		String player2Name = ui.getPlayerName();
 
+		game.addPlayer(new HumanPlayer(player1Name, config.getStartingChips()));
+		game.addPlayer(new HumanPlayer(player2Name, config.getStartingChips()));
+
+		game.startGame();
 
 		//MAIN GAME LOOP-----
+		Scanner scanner = new Scanner(System.in);
 		boolean playing = true;
 		while (playing) {
 			game.playRound();
 			game.resetRound();
 
+
+			//todo: maybe integrate this towards ConsoleUI
 			//see if player wants to continue
 			ui.displayMessage("Play again? (y/n)");
-
-			Scanner scanner = new Scanner(System.in);
 			String response = scanner.nextLine().trim().toLowerCase();
 			if (!response.equals("y")) {
 				playing = false;
 			}
-
 		}
-
 	}
 }

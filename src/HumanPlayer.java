@@ -6,6 +6,8 @@ public class HumanPlayer extends Player {
 
 	@Override
 	public void placeBet(int bet) throws InvalidBetException, InsufficientChipsException {
+		if (bet == 0) return;
+
 		if (bet < 0) {
 			throw new InvalidBetException("Bet Amount CANT BE NEGATIVE.");
 		}

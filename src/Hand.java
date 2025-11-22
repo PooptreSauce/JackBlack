@@ -45,15 +45,13 @@ public class Hand {
 		return total;
 	}
 
-	//check if hand has EXACTLY 2 cards of same rank for split
+	//check if hand has EXACTLY 2 cards which are also the same rank
 	public boolean canSplit() {
-
 		if (cards.size() == 2) {
 			if (cards.get(0).getRank() == cards.get(1).getRank()) {
 				return true;
 			}
 		}
-
 		//can't split
 		return false;
 	}
@@ -76,7 +74,6 @@ public class Hand {
 	}
 
 	public boolean isBlackjack() {
-
         if (getHandValue() == 21 && cards.size() == 2) {
             return true;
         }

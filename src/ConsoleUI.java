@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 public class ConsoleUI implements UserInterface, GameEventListener {
-	private final Scanner scanner = new Scanner(System.in);
+	private final Scanner scanner = new Scanner(System.in); //DONT CLOSE (TIED TO SYSTEM.IN)
 
 	//todo: remove and switch to using DTO for multiplayer
 	//ui currently holds game reference to display table
@@ -27,7 +27,7 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 			}
 			case PLAYER_HIT -> {
 				Player player = (Player) event.getPayload();
-				displayMessage(player.getName() + "HITS!");
+				displayMessage(player.getName() + " HITS!");
 			}
 			case ROUND_END -> displayMessage("== ROUND COMPLETE ==");
 		}
@@ -75,7 +75,7 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 
 			try {
 				int bet = Integer.parseInt(scanner.nextLine().trim());
-				if (bet >= 0 && bet <= maxBet) {
+				if (bet == 0 || (bet >= minBet && bet <= maxBet)) {
 					return bet;
 				}
 

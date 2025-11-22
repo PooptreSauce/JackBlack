@@ -16,5 +16,6 @@ public class GameConstants {
 	public static final int DEFAULT_STARTING_CHIPS = 1000;
 	public static final int DEFAULT_MIN_BET = 10;
 	public static final String DEFAULT_PLAYER_NAME = "PLAYER";
+	public static final int DEFAULT_SITTING_OUT_BET = 0; //todo: change to player "state" later
 
 }
