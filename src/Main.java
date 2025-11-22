@@ -1,5 +1,3 @@
-import java.util.*;
-
 public class Main {
 	public static void main(String[] args) {
 
@@ -30,20 +28,11 @@ public class Main {
 		game.startGame();
 
 		//MAIN GAME LOOP-----
-		Scanner scanner = new Scanner(System.in);
 		boolean playing = true;
 		while (playing) {
 			game.playRound();
 			game.resetRound();
-
-
-			//todo: maybe integrate this towards ConsoleUI
-			//see if player wants to continue
-			ui.displayMessage("Play again? (y/n)");
-			String response = scanner.nextLine().trim().toLowerCase();
-			if (!response.equals("y")) {
-				playing = false;
-			}
+			playing = ui.askPlayAgain();
 		}
 	}
 }

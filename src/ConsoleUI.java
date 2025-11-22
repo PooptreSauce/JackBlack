@@ -26,10 +26,20 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 				}
 			}
 			case PLAYER_HIT -> {
-				Player player = (Player) event.getPayload();
-				displayMessage(player.getName() + " HITS!");
+				Object[] payload = (Object[]) event.getPayload();
+				Player player = (Player) payload[0];
+				Card card = (Card) payload[1];
+				displayMessage(player.getName() + " HITS: " + card);
 			}
-			case ROUND_END -> displayMessage("== ROUND COMPLETE ==");
+			case PLAYER_BET -> {
+				PlayerResult playerResult = (PlayerResult) event.getPayload();
+				displayMessage(playerResult.player().getName() + " bets " + playerResult.payout());
+			}
+			case ROUND_END -> printHeader("ROUND COMPLETE");
+			case ERROR_MESSAGE -> {
+				String msg = (String) event.getPayload();
+				displayMessage("ERROR! " + msg);
+			}
 		}
 	}
 
@@ -103,11 +113,16 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		}
 	}
 
+	public boolean askPlayAgain() {
+		System.out.print("Play Again? (y/n): ");
+		return scanner.nextLine().trim().equalsIgnoreCase("y");
+	}
+
 	//--------SHOW TABLE
 	//we can add more helper methods to split this up a bit
 	public void showTable(BlackjackGame game, GameState state) {
 		//title
-		System.out.println("\n===== TABLE =====");
+		printHeader("TABLE");
 
 		//dealer --> has hand
 		Dealer dealer = game.getDealer();
@@ -139,7 +154,16 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 			else if (hand.isBlackjack()) System.out.println("  --> BLACKJACK!!!");
 		}
 
-		System.out.println("-----------------------------------------");
+		printDivider();
 
+	}
+
+	//FORMAT/DISPLAY HELPERS
+	private void printDivider() {
+		System.out.println("-------------------------------------------");
+	}
+
+	private void printHeader(String text) {
+		System.out.printf("%n==== %s ====%n", text);
 	}
 }

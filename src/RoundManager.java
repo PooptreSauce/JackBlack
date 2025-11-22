@@ -46,7 +46,7 @@ public class RoundManager {
 				//is bet coming from human or AI?
 				if (player instanceof AIPlayer ai) {
 					bet = ai.decideBet(config.getMinBet(), actualMaxBet);
-					ui.displayMessage(ai.getName() + " bets " + bet);
+					fireEvent(GameEventType.PLAYER_BET, new PlayerResult(ai, null, bet));
 				}
 				else {
 					bet = ui.getBetInput(
@@ -66,7 +66,7 @@ public class RoundManager {
 				player.placeBet(bet);
 
 			} catch (InvalidBetException | InsufficientChipsException e) {
-				System.err.println("Betting ERROR for " + player.getName() + ": " + e.getMessage());
+				fireEvent(GameEventType.ERROR_MESSAGE, player.getName() + ": " + e.getMessage());
 				player.getCurrentHand().setBet(0);
 			}
 		}
@@ -125,7 +125,7 @@ public class RoundManager {
 				Card card = deck.dealCard();
 				if (card != null) {
 					player.hit(hand, card);
-					ui.displayMessage(player.getName() + " hits: " + card);
+					fireEvent(GameEventType.PLAYER_HIT, new Object[]{ player, card});
 				}
 			} else {
 				break; //STAND or (other choice [unimplemented])
