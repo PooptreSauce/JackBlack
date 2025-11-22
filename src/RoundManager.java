@@ -58,12 +58,14 @@ public class RoundManager {
 
 				//let player sit out if they want to
 				if (bet == 0) {
+					player.setRoundState(PlayerRoundState.SITTING_OUT);
 					player.getCurrentHand().setBet(0);
 					continue;
 				}
 
 				//validate then apply via the player model
 				player.placeBet(bet);
+				player.setRoundState(PlayerRoundState.PLAYING);
 
 			} catch (InvalidBetException | InsufficientChipsException e) {
 				fireEvent(GameEventType.ERROR_MESSAGE, player.getName() + ": " + e.getMessage());
@@ -90,6 +92,8 @@ public class RoundManager {
 			Card dealerCard = deck.dealCard();
 			if (dealerCard != null) dealer.getHand().addCard(dealerCard);
 		}
+
+		fireEvent(GameEventType.STATE_CHANGED, null);
 	}
 
 	//------EXECUTE ALL PLAYER TURNS IN ORDER
@@ -100,7 +104,6 @@ public class RoundManager {
 		for (Player player : players) {
 			if (player.getCurrentHand().getBet() == 0) continue;
 			executeSinglePlayerTurn(player);
-
 		}
 	}
 
@@ -163,6 +166,8 @@ public class RoundManager {
 				player.addChips(bet); //return the original bet on push
 			}
 			//if payout < 0 they already lost their bet (chips deducted earlier)
+			playerHand.setBet(0);
+			player.setRoundState(PlayerRoundState.FINISHED);
 		}
 
 		currentState = GameState.ROUND_COMPLETE;

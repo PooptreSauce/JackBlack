@@ -21,8 +21,11 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		switch (type) {
 			case STATE_CHANGED -> {
 				displayGameState(state);
-				if (game != null) {
-					showTable(game, state); //showTable will handle display logic
+				printDivider();
+
+				//dont render table during betting phase
+				if (state != GameState.COLLECTING_BETS) {
+					if (game != null) showTable(game, state);
 				}
 			}
 			case PLAYER_HIT -> {
@@ -30,6 +33,9 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 				Player player = (Player) payload[0];
 				Card card = (Card) payload[1];
 				displayMessage(player.getName() + " HITS: " + card);
+				if (game != null) {
+					showTable(game, event.getState()); //show new hand + busts
+				}
 			}
 			case PLAYER_BET -> {
 				PlayerResult playerResult = (PlayerResult) event.getPayload();
@@ -130,28 +136,46 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 
 		boolean dealerRevealed = (state != GameState.DEALING_INITIAL_CARDS && state != GameState.PLAYER_TURNS);
 
-		//dealer display
+		//DEALER display
 		if (dealerRevealed) {
 			System.out.println("Dealer hand: " + dealerHand.getCards() + " (Value: " + dealerHand.getHandValue() + ")");
 		}
 		else {
 			Card upCard = dealer.getUpCard();
-			System.out.println("Dealer shows: " + (upCard != null ? upCard.toString() : "NULL?") + " and [hidden]");
+			if (upCard != null) {
+				System.out.println("Dealer shows: " + upCard + " and [hidden]");
+			}
+			else {
+				//no cards were dealt yet
+				System.out.println("Dealer hasn't been dealt cards yet...");
+			}
 		}
 
-		//all players hands AND chips (or sitting out)
+		//PLAYER(S) display
 		for (Player player : game.getPlayers()) {
 
 			Hand hand = player.getCurrentHand();
-			if (hand.getBet() == 0) { //todo: get rid of magic number (player states?)
-				System.out.println(player.getName() + " is sitting out this round...");
+			int bet = hand.getBet();
+
+			if (state == GameState.COLLECTING_BETS) {
+				System.out.println(player.getName() + " waiting to bet...");
 				continue;
 			}
 
-			System.out.printf("%s (Chips: %d, Bet: %d)\n", player.getName(), player.getChips(), hand.getBet());
-			System.out.println("   Hand: " + hand.getCards() + " (Value: " + hand.getHandValue() + ")");
-			if (hand.isBust()) System.out.println("  --> BUST!!!");
-			else if (hand.isBlackjack()) System.out.println("  --> BLACKJACK!!!");
+			PlayerRoundState prs = player.getRoundState();
+
+			switch (prs) {
+				case WAITING_FOR_BET -> System.out.println(player.getName() + " waiting to bet...");
+				case SITTING_OUT -> System.out.println(player.getName() + " is sitting out this round...");
+				case PLAYING, FINISHED -> {
+					System.out.printf("%s (Chips: %d, Bet: %d)\n", player.getName(), player.getChips(), hand.getBet());
+					System.out.println("   Hand: " + hand.getCards() + " (Value: " + hand.getHandValue() + ")");
+					if (hand.isBust()) System.out.println("  --> BUST!!!");
+					else if (hand.isBlackjack()) System.out.println("  --> BLACKJACK!!!");
+				}
+			}
+
+
 		}
 
 		printDivider();
@@ -160,7 +184,7 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 
 	//FORMAT/DISPLAY HELPERS
 	private void printDivider() {
-		System.out.println("-------------------------------------------");
+		System.out.println("===============================================");
 	}
 
 	private void printHeader(String text) {

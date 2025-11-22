@@ -13,12 +13,14 @@ abstract class Player {
 	protected String name;
 	protected List<Hand> hands;
 	protected int chips;
+	protected PlayerRoundState roundState;
 
 	public Player(String name, int chips) {
 		this.name = name;
 		this.hands = new ArrayList<>();
 		this.hands.add(new Hand(0));
 		this.chips = chips;
+		this.roundState = PlayerRoundState.WAITING_FOR_BET;
 	}
 
 	//-------ABSTRACT methods
@@ -58,8 +60,19 @@ abstract class Player {
 	}
 
 	public void clearHands() {
+		for (Hand hand : hands) {
+			hand.clear();
+		}
 		hands.clear();
 		hands.add(new Hand(0));
+	}
+
+	public PlayerRoundState getRoundState() {
+		return roundState;
+	}
+
+	public void setRoundState(PlayerRoundState roundState) {
+		this.roundState = roundState;
 	}
 
 	@Override

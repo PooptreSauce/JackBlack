@@ -46,6 +46,7 @@ public class BlackjackGame {
 	public void resetRound() {
 		for (Player player : players) {
 			player.clearHands();
+		player.setRoundState(PlayerRoundState.WAITING_FOR_BET);
 		}
 		dealer.clearHand();
 	}
