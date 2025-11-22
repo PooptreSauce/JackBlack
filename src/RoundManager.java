@@ -41,9 +41,20 @@ public class RoundManager {
 		for (Player player : players) {
 			try {
 				int actualMaxBet = Math.min(config.getMaxBet(), player.getChips());
+				int bet;
 
-				//ask via the UI
-				int bet = ui.getBetInput(player.getName(), config.getMinBet(), actualMaxBet);
+				//is bet coming from human or AI?
+				if (player instanceof AIPlayer ai) {
+					bet = ai.decideBet(config.getMinBet(), actualMaxBet);
+					ui.displayMessage(ai.getName() + " bets " + bet);
+				}
+				else {
+					bet = ui.getBetInput(
+							player.getName(),
+							config.getMinBet(),
+							actualMaxBet
+					);
+				}
 
 				//let player sit out if they want to
 				if (bet == 0) {
@@ -100,7 +111,15 @@ public class RoundManager {
 		if (hand.isBlackjack()) return;
 
 		while (!hand.isBust()) {
-			PlayerAction action = ui.getPlayerAction(player.getName(), hand, hand.getHandValue());
+			PlayerAction action;
+
+			//is action from human or AI?
+			if (player instanceof AIPlayer ai) {
+				action = ai.decideAction(hand);
+			}
+			else {
+				action = ui.getPlayerAction(player.getName(), hand, hand.getHandValue());
+			}
 
 			if (action == PlayerAction.HIT) {
 				Card card = deck.dealCard();
@@ -109,7 +128,7 @@ public class RoundManager {
 					ui.displayMessage(player.getName() + " hits: " + card);
 				}
 			} else {
-				break; //STAND or other choice
+				break; //STAND or (other choice [unimplemented])
 			}
 		}
 	}

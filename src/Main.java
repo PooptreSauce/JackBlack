@@ -21,13 +21,11 @@ public class Main {
 			consoleUI.setGame(game); //let the consoleUI have access to game object
 		}
 
+		String player1Name = ui.getPlayerName();
 
 		//get player name and add player with starting chips
-		String player1Name = ui.getPlayerName();
-		String player2Name = ui.getPlayerName();
-
 		game.addPlayer(new HumanPlayer(player1Name, config.getStartingChips()));
-		game.addPlayer(new HumanPlayer(player2Name, config.getStartingChips()));
+		game.addPlayer(new AIPlayer("bot1", config.getStartingChips()));
 
 		game.startGame();
 
