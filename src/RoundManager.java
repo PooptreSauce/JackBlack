@@ -168,6 +168,8 @@ public class RoundManager {
 			//if payout < 0 they already lost their bet (chips deducted earlier)
 			playerHand.setBet(0);
 			player.setRoundState(PlayerRoundState.FINISHED);
+
+			fireEvent(GameEventType.PLAYER_BET, new PlayerResult(player, outcome, payout)); //let UI handle ALL players
 		}
 
 		currentState = GameState.ROUND_COMPLETE;

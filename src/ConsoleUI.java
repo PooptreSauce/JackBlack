@@ -20,6 +20,7 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		//what type of event? (!!not state!!)
 		switch (type) {
 			case STATE_CHANGED -> {
+				TerminalUtils.clearScreen();
 				displayGameState(state);
 				printDivider();
 
