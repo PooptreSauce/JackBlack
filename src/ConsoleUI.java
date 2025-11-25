@@ -11,6 +11,32 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		this.game = game;
 	}
 
+	//------------UI PACING HELPERS
+	private void uiPause() {
+		if (game == null) return;
+
+		GameConfig config = game.getConfig(); //to grab pacing values from config
+
+		if (config.isManualStep()) {
+			waitForPlayer(""); //("prompt")
+		}
+		else if (config.isAnimated()) {
+			try {
+				Thread.sleep(config.getUiDelayMs());
+			} catch (InterruptedException ignored) {}
+		}
+	}
+
+	private void waitForPlayer(String prompt) {
+		System.out.print(prompt + " (Press Enter) ");
+
+		try {
+			System.in.read();
+			//clear extra newlines maybe still in input buffer
+			while (System.in.available() > 0) System.in.read();
+		} catch (Exception ignored) {}
+		System.out.println();
+	}
 	//--------------EVENT HANDLING
 	@Override
 	public void onGameEvent(GameEvent event) {
@@ -20,23 +46,24 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		//what type of event? (!!not state!!)
 		switch (type) {
 			case STATE_CHANGED -> {
-				TerminalUtils.clearScreen();
-				displayGameState(state);
-				printDivider();
-
-				//dont render table during betting phase
 				if (state != GameState.COLLECTING_BETS) {
-					if (game != null) showTable(game, state);
+					refreshScreen(state);
+				}
+				else {//DO NOT show full table during bet phase
+					TerminalUtils.clearScreen();
+					displayGameState(state);
+					printDivider();
 				}
 			}
 			case PLAYER_HIT -> {
 				Object[] payload = (Object[]) event.getPayload();
 				Player player = (Player) payload[0];
 				Card card = (Card) payload[1];
+
 				displayMessage(player.getName() + " HITS: " + card);
-				if (game != null) {
-					showTable(game, event.getState()); //show new hand + busts
-				}
+
+				uiPause();  //<----delay for dealing
+				refreshScreen(event.getState());
 			}
 			case PLAYER_BET -> {
 				PlayerResult playerResult = (PlayerResult) event.getPayload();
@@ -54,6 +81,8 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 	public void displayGameState(GameState state) {
 		System.out.println("\n = = " + state + " = =");
 
+		//this is technically redundant
+		/*
 		switch (state) {
 			case COLLECTING_BETS -> System.out.println("Collecting Bets...");
 			case DEALING_INITIAL_CARDS -> System.out.println("Dealing initial cards...");
@@ -63,6 +92,7 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 			case ROUND_COMPLETE -> System.out.println("Round finished!!!");
 			default -> {} //not really sure how to test this
 		}
+		*/
 
 		//later we can do summary or something
 	}
@@ -191,5 +221,14 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 
 	private void printHeader(String text) {
 		System.out.printf("%n==== %s ====%n", text);
+	}
+
+	private void refreshScreen(GameState state) {
+		if (game == null) return;
+
+		TerminalUtils.clearScreen();
+		displayGameState(state);
+		printDivider();
+		showTable(game, state);
 	}
 }

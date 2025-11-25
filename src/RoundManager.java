@@ -88,6 +88,7 @@ public class RoundManager {
 
 				Card card = deck.dealCard();
 				if (card != null) player.hit(player.getCurrentHand(), card);
+				fireEvent(GameEventType.PLAYER_HIT, new Object[] { player, card });
 			}
 			Card dealerCard = deck.dealCard();
 			if (dealerCard != null) dealer.getHand().addCard(dealerCard);

@@ -7,6 +7,9 @@ public class Main {
 				.minBet(10)
 				.maxBet(1000)
 				.startingChips(1000)
+				.animated(true)
+				.manualStep(false)
+				.uiDelay(800)
 				.build();
 
 		//create UI
