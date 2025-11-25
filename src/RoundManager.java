@@ -141,7 +141,18 @@ public class RoundManager {
 	public void executeDealerTurn() {
 		currentState = GameState.DEALER_TURN;
 		fireEvent(GameEventType.STATE_CHANGED, null);
-		dealer.playTurn(deck);
+
+		Hand dealerHand = dealer.getHand();
+
+		//dealer keeps hitting until reach stand value
+		while (dealerHand.getHandValue() < GameConstants.DEALER_STAND_VALUE) {
+			Card card = deck.dealCard();
+			if (card == null) break;
+
+			dealerHand.addCard(card);
+
+			fireEvent(GameEventType.DEALER_HIT, card);
+		}
 	}
 
 	//----PROCESSING PAYOUTS
@@ -151,12 +162,18 @@ public class RoundManager {
 
 		Hand dealerHand = dealer.getHand();
 
+		//PAYLOAD, contains results of round for all players
+		List<PlayerResult> results = new ArrayList<>();
+
 		for (Player player : players) {
 			Hand playerHand = player.getCurrentHand();
 			int bet = playerHand.getBet();
 
-			//skip if sitting out (maybe change method so that sitting-out players are "pre-considered")
-			if (bet == 0) continue;
+			//skip player if they are sitting out
+			if (bet == 0) {
+				player.setRoundState(PlayerRoundState.FINISHED);
+				continue;
+			};
 
 			HandOutcome outcome = GameLogic.determineOutcome(playerHand, dealerHand);
 			int payout = GameLogic.calculatePayout(outcome, bet);
@@ -167,16 +184,18 @@ public class RoundManager {
 				player.addChips(bet); //return the original bet on push
 			}
 			//if payout < 0 they already lost their bet (chips deducted earlier)
+
+			//clear hand's bet for safety
 			playerHand.setBet(0);
 			player.setRoundState(PlayerRoundState.FINISHED);
 
-			fireEvent(GameEventType.PLAYER_BET, new PlayerResult(player, outcome, payout)); //let UI handle ALL players
+			//build a result record for this player
+			results.add(new PlayerResult(player, outcome, payout));
 		}
 
 		currentState = GameState.ROUND_COMPLETE;
 		fireEvent(GameEventType.STATE_CHANGED, null);
-		fireEvent(GameEventType.ROUND_END, null);
-
+		fireEvent(GameEventType.ROUND_END, results);
 	}
 	//------------------
 

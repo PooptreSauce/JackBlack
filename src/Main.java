@@ -25,8 +25,9 @@ public class Main {
 		String player1Name = ui.getPlayerName();
 
 		//get player name and add player with starting chips
+		game.addPlayer(new AIPlayer("Robot guy", config.getStartingChips()));
 		game.addPlayer(new HumanPlayer(player1Name, config.getStartingChips()));
-		game.addPlayer(new AIPlayer("bot1", config.getStartingChips()));
+
 
 		game.startGame();
 

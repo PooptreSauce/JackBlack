@@ -27,6 +27,60 @@ public final class AsciiCardRenderer {
         }
     }
 
+    public static void printLabeledHand(String label, Hand hand, boolean hideHoleCard) {
+        //empty hand
+        if (hand == null || hand.getCards().isEmpty()) {
+            System.out.println(label + "  (no cards yet)");
+            return;
+        }
+
+        int displayValue;
+        if (hideHoleCard) {
+            //show only visible (up-card) value
+            Card up = hand.getCards().get(0);
+            displayValue = up.getCardValue();
+        } else {
+            displayValue = hand.getHandValue();
+        }
+
+        System.out.printf("%s  (Value: %d)%n", label, displayValue);
+
+        //render cards
+        if (hideHoleCard && hand.getCards().size() >= 2) {
+            //visible + hidden card
+            Card visible = hand.getCards().get(0);
+            printHandWithHiddenCard(List.of(visible));
+            return;
+        }
+
+        printHand(hand.getCards());
+    }
+
+    private static void printHandWithHiddenCard(List<Card> visibleCards) {
+        List<String[]> cardLines = visibleCards.stream()
+                .map(AsciiCardRenderer::renderCard)
+                .toList();
+
+        String[] hiddenCard = {
+                "┏━━━━━━━━━┓",
+                "┃░░░░░░░░░┃",
+                "┃░░░░░░░░░┃",
+                "┃░░░░░░░░░┃",
+                "┃░░░░░░░░░┃",
+                "┃░░░░░░░░░┃",
+                "┗━━━━━━━━━┛"
+        };
+
+        //append hidden card lines
+        for (int line = 0; line < hiddenCard.length; line++) {
+            for (String[] card : cardLines) {
+                System.out.print(card[line] + " ");
+            }
+            System.out.print(hiddenCard[line]);
+            System.out.println();
+        }
+    }
+
     //render a single card into a 7 line ascii format (11x7) for each card
     private static String[] renderCard(Card card) {
         String rank = getRankSymbol(card.getRank());

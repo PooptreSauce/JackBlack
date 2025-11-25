@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.List;
 
 public class ConsoleUI implements UserInterface, GameEventListener {
 	private final Scanner scanner = new Scanner(System.in); //DONT CLOSE (TIED TO SYSTEM.IN)
@@ -55,6 +56,14 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 					printDivider();
 				}
 			}
+			case DEALER_HIT -> {
+				Card card = (Card) event.getPayload();
+
+				displayMessage("Dealer draws: " + card);
+
+				uiPause();
+				refreshScreen(event.getState());
+			}
 			case PLAYER_HIT -> {
 				Object[] payload = (Object[]) event.getPayload();
 				Player player = (Player) payload[0];
@@ -67,9 +76,17 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 			}
 			case PLAYER_BET -> {
 				PlayerResult playerResult = (PlayerResult) event.getPayload();
-				displayMessage(playerResult.player().getName() + " bets " + playerResult.payout());
+				if (playerResult.payout() > 0) {
+					displayMessage(playerResult.player().getName() + " places bet: " + playerResult.payout());
+				}
 			}
-			case ROUND_END -> printHeader("ROUND COMPLETE");
+			case ROUND_END -> {
+				@SuppressWarnings("unchecked") //it's fine to cast as this list type
+				List<PlayerResult> results = (List<PlayerResult>) event.getPayload();
+				refreshScreen(event.getState()); //show final table ONE time
+				printRoundSummary(results);
+				uiPause();
+			}
 			case ERROR_MESSAGE -> {
 				String msg = (String) event.getPayload();
 				displayMessage("ERROR! " + msg);
@@ -165,26 +182,21 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		Dealer dealer = game.getDealer();
 		Hand dealerHand = dealer.getHand();
 
-		boolean dealerRevealed = (state != GameState.DEALING_INITIAL_CARDS && state != GameState.PLAYER_TURNS);
+		boolean hideHole = (state == GameState.DEALING_INITIAL_CARDS || state == GameState.PLAYER_TURNS);
 
 		//DEALER display
-		if (dealerRevealed) {
-			System.out.println("Dealer hand: " + dealerHand.getCards() + " (Value: " + dealerHand.getHandValue() + ")");
+		if (!dealerHand.getCards().isEmpty()) {
+			AsciiCardRenderer.printLabeledHand("Dealer", dealerHand, hideHole);
 		}
 		else {
-			Card upCard = dealer.getUpCard();
-			if (upCard != null) {
-				System.out.println("Dealer shows: " + upCard + " and [hidden]");
-			}
-			else {
-				//no cards were dealt yet
-				System.out.println("Dealer hasn't been dealt cards yet...");
-			}
+			System.out.println("Dealer has not been dealt cards yet...");
 		}
+
+		printBorder2();
 
 		//PLAYER(S) display
 		for (Player player : game.getPlayers()) {
-
+			printBorder();
 			Hand hand = player.getCurrentHand();
 			int bet = hand.getBet();
 
@@ -206,8 +218,6 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 					else if (hand.isBlackjack()) System.out.println("  --> BLACKJACK!!!");
 				}
 			}
-
-
 		}
 
 		printDivider();
@@ -217,6 +227,14 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 	//FORMAT/DISPLAY HELPERS
 	private void printDivider() {
 		System.out.println("===============================================");
+	}
+
+	private void printBorder() {
+		System.out.println("-----------------------------------------------");
+	}
+
+	private void printBorder2() {
+		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
 
 	private void printHeader(String text) {
@@ -230,5 +248,28 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 		displayGameState(state);
 		printDivider();
 		showTable(game, state);
+	}
+
+	//iterate through all players' results, print their name, HandOutcome and what they won/lost
+	private void printRoundSummary (List<PlayerResult> results) {
+		printHeader("RESULTS");
+
+		for (PlayerResult pr : results) {
+			Player p = pr.player();
+			HandOutcome outcome = pr.outcome();
+			int change = pr.payout();
+
+			String outcomeText = switch (outcome) {
+				case PLAYER_BLACKJACK -> "BLACKJACK! +" + change;
+				case PLAYER_WIN -> "WIN +" + change;
+				case PUSH -> "PUSH (no change)";
+				case PLAYER_LOSE -> "LOSE -" + Math.abs(change);
+				case PLAYER_BUST -> "BUST -" + Math.abs(change);
+			};
+
+			System.out.printf("%-10s %-15s (Chips: %d)\n", p.getName(), outcomeText, p.getChips());
+		}
+
+		printDivider();
 	}
 }
