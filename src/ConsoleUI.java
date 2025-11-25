@@ -170,7 +170,9 @@ public class ConsoleUI implements UserInterface, GameEventListener {
 				case SITTING_OUT -> System.out.println(player.getName() + " is sitting out this round...");
 				case PLAYING, FINISHED -> {
 					System.out.printf("%s (Chips: %d, Bet: %d)\n", player.getName(), player.getChips(), hand.getBet());
-					System.out.println("   Hand: " + hand.getCards() + " (Value: " + hand.getHandValue() + ")");
+					//System.out.println("   Hand: " + hand.getCards() + " (Value: " + hand.getHandValue() + ")");
+					System.out.printf("   Hand (Value: %d):\n", hand.getHandValue());
+					AsciiCardRenderer.printHand(hand.getCards());
 					if (hand.isBust()) System.out.println("  --> BUST!!!");
 					else if (hand.isBlackjack()) System.out.println("  --> BLACKJACK!!!");
 				}
